@@ -4,17 +4,17 @@ from src.database import get_db
 from  src.entry.model import Entry
 from src.entry.schemas import Request_Entry, Response_Entry
 
-router = APIRouter()
+entry = APIRouter()
 
 #All entry details
-@router.get("/entry")
+@entry.get("/all_entry")
 def show_entry(db: Session = Depends(get_db)):
-    all_entry = db.query(Entry).all()
+    show_all_entry = db.query(Entry).all()
 
-    return all_entry
+    return show_all_entry
 
 #Create new entry
-@router.post("/entry", response_model=Response_Entry)
+@entry.post("/create_entry", response_model=Response_Entry)
 def create_entry(request: Request_Entry, db: Session = Depends(get_db)):
     new_entry = Entry(**request.dict())
     db.add(new_entry)
@@ -23,20 +23,20 @@ def create_entry(request: Request_Entry, db: Session = Depends(get_db)):
     return new_entry
 
 #Update entry by id
-@router.put("/entry/{id}")
+@entry.put("/update_entry/{id}")
 def update_entry(id: str, request: Request_Entry, db:Session = Depends(get_db)):
     db.query(Entry).filter(Entry.id == id).update(request.dict())
     db.commit()
 
-    return "Done"
+    return {"message": "Update Done"}
 
 #Delete entry by id
-@router.delete("/entry/{id}")
+@entry.delete("/delete_entry/{id}")
 def delete_entry(id: str, db: Session = Depends(get_db)):
     db.query(Entry).filter(Entry.id == id).delete(synchronize_session=False)
     db.commit()
 
-    return "Done"
+    return {"message": "Delete Done"}
 
 
 

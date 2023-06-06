@@ -1,13 +1,13 @@
 from fastapi import FastAPI
-from src.user import route
-from src.entry import routes
-from src.compatition import rout
+from src.user.route import user
+from src.entry.route import entry
+from src.compatition.route import compatition 
 
 import uvicorn
 
 app = FastAPI()
+app.include_router(user)
+app.include_router(entry)
+app.include_router(compatition)
 
-app.include_router(route.router)
-app.include_router(routes.router)
-app.include_router(rout.router)
 

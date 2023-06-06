@@ -1,43 +1,60 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from src.database import get_db
-from src.user.schemas import Request_User, Response_User
+from src.user.schemas import Request_User, Response_User, Login
 from src.user.model import User
+from src.utils.token import create_access_token, get_current_user
+import json
+from typing import Annotated
 
-router = APIRouter()
+user = APIRouter()
 
 #Get all user details
-@router.get("/users")
-def show_detail(user: Request_User, db: Session = Depends(get_db)):
+@user.get("/all_users")
+def show_detail(db: Session = Depends(get_db)):
     users = db.query(User).all()
 
     return {"users": users}
 
 #Create new users
-@router.post("/users", response_model=Response_User)
-def user_detail(user: Request_User, db: Session = Depends(get_db)):
-    user.password = user.password+"12354"
-    users = User(**user.dict())
-    db.add(users)
+@user.post("/create_user", response_model=Response_User)
+def user_detail(request: Request_User, db: Session = Depends(get_db)):
+    request.password = request.password+"12354"
+    create_user = User(**request.dict())
+    db.add(create_user)
     db.commit()
 
-    return users
+    return create_user
 
-#Update user detail by name
-@router.put("/users/{name}")
-def update_detail(name: str, user: Request_User, db: Session = Depends(get_db)):
-    db.query(User).filter(User.name == name).update(user.dict())
+@user.post("/login")
+def login(request: Login, db: Session = Depends(get_db)):
+    user_data = db.query(User).filter(User.email == request.email,
+                                 User.password == request.password).first()
+
+    if user_data:
+        user_encode = create_access_token({"name": str(user_data.id), "email": user_data.email})
+        return user_encode     
+    else :
+        return {"message": "email and password is wrong"}
+    
+
+@user.put("/update_user/{id}")
+def update_detail(id: str, access_token: Annotated[User, Depends(get_current_user)], request: Request_User, db: Session = Depends(get_db)):
+    """Update user detail by name"""
+    
+
+    db.query(User).filter(User.id == id).update()
     db.commit()
 
-    return "Done"
+    return {"message": "Update Done"}
 
 #Delete user detail by name
-@router.delete("/users/{name}")
-def delete_detail(name: str, db: Session = Depends(get_db)):
-    db.query(User).filter(User.name == name).delete(synchronize_session=False)
+@user.delete("/delete_user/{id}")
+def delete_detail(id: str, db: Session = Depends(get_db)):
+    a=db.query(User).filter(User.id == id).delete(synchronize_session=False)
     db.commit()
     
-    return "Done"
+    return {"message": "Delete Done"}
 
 
 

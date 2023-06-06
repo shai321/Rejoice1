@@ -4,17 +4,17 @@ from src.database import get_db
 from src.compatition.model import Compatition
 from src.compatition.schemas import Request_Competition, Response_Competition
 
-router = APIRouter()
+compatition = APIRouter()
 
 #All competition detail
-@router.get("/competition")
+@compatition.get("/all_competition")
 def show_competition(db: Session = Depends(get_db)):
-    all_competition = db.query(Compatition).all()
+    show_all_competition = db.query(Compatition).all()
 
-    return all_competition
+    return show_all_competition
 
 #Create new competition
-@router.post("/competition", response_model=Response_Competition)
+@compatition.post("/create_competition", response_model=Response_Competition)
 def create_competition(request: Request_Competition, db: Session = Depends(get_db)):
     new_competition = Compatition(**request.dict())
     db.add(new_competition)
@@ -23,17 +23,17 @@ def create_competition(request: Request_Competition, db: Session = Depends(get_d
     return new_competition
 
 #Update competition detail by id 
-@router.put("/competition/{id}")
+@compatition.put("/update_competition/{id}")
 def update_competition(id: str, request: Request_Competition, db: Session = Depends(get_db)):
     db.query(Compatition).filter(Compatition.id == id).update(request.dict())
     db.commit()
 
-    return "Done"
+    return {"message": "Update Done"}
 
 #Delete competition detail by id
-@router.delete("/competition/{id}")
+@compatition.delete("/delete_competition/{id}")
 def delete_competition(id: str, db:Session = Depends(get_db)):
     db.query(Compatition).filter(Compatition.id == id).delete(synchronize_session=False)
     db.commit()
 
-    return "Done"
+    return {"message": "Delete Done"}

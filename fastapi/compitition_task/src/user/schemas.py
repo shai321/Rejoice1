@@ -5,7 +5,7 @@ from datetime import datetime
 
 
 class Request_User(BaseModel):
-    # id: UUID = Field(default_factory=uuid4)
+
     name: str
     email: EmailStr
     password: str
@@ -29,5 +29,8 @@ class Response_User(BaseModel):
         orm_mode = True
 
 
+class Login(BaseModel):
+    email: EmailStr
+    password: str
 
 
